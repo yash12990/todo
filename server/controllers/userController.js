@@ -1,65 +1,95 @@
-const users = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "johndoe@example.com",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "janesmith@example.com",
-  },
-  {
-    id: 3,
-    name: "Michael Johnson",
-    email: "michaeljohnson@example.com",
-  },
-  {
-    id: 4,
-    name: "Emily Davis",
-    email: "emilydavis@example.com",
-  },
-];
+import { User } from "../models/userModel.js";
 
-export const getUsers = (req, res) => res.send({ users, status: "success" });
-
-export const addUser = (req, res) => {
-  const user = req.body;
-  users.push(user);
-  res.status(201).send(`User ${user.name} added successfully.`);
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json({ data: users, status: 200 });
+  } catch (error) {
+    console.log("Error in fetching users", error);
+    res.status(500).json({ message: "Error in fetching users" });
+  }
 };
 
-export const getUserById = (req, res) => {
-  // const { id } = req.params; // req.params is used to retrieve information from URL. Id is a param here
-  const userId = req.params.id; // Can also be used like this
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if(!user) return res.status(404).json({ message: "No such user" });
 
-  const selectedUser = users.find((user) => (user.id = userId));
-
-  res.send(selectedUser);
+    res.status(200).json({
+      data: user,
+      status: 200,
+    });
+  } catch (error) {
+    console.log("Error in fetching user", error);
+    res.status(500).json({ message: "Error in fetching user" });
+  }
 };
 
-export const deleteUser = (req, res) => {
-  const { id } = req.params;
-  const filteredUsers = users.filter((user) => user.id != id);
+export const createUser = async (req, res) => {
+  try {
+    if (!req.body.name || !req.body.email || !req.body.password) {
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields." });
+    }
 
-  res.send({
-    users: filteredUsers,
-    status: "success",
-    message: "User deleted successfully!!!",
-  });
+    const newUser = {
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+    };
+
+    const user = await User.create(newUser);
+    res.status(201).json(user);
+  } catch (error) {
+    console.log("Error creating user", error);
+  }
 };
 
-export const updateUser = (req, res) => {
-  const { id } = req.params;
-  const { name, email } = req.body;
+export const updateUser = async (req, res) => {
+  try {
+    if (!req.body.name || !req.body.email || !req.body.password) {
+      return res.status(400).json({ message: "All fields must be filled!!!" });
+    }
 
-  const userToBeUpdated = users.find((user) => user.id == id);
-  if (name) userToBeUpdated.name = name;
-  if (email) userToBeUpdated.email = email;
+    const { id } = req.params;
+    const updatedUser = await User.findByIdAndUpdate(id, req.body);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  res.send({
-    user: userToBeUpdated,
-    status: "success",
-    message: "User updated successfully!!!",
-  });
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.log("Error updating user", error);
+    res.status(500).json({ message: "Error updating user" });
+  }
 };
+
+export const deleteUser = async(req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await User.findByIdAndDelete(id);
+    if (!result) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log("Error deleting user", error);
+  }
+};
+
+// export const addTask = async(req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const updatedUser = await User.findByIdAndUpdate(id, {
+//       $push: { tasks: req.body.task },
+//     });
+
+//     res.status(200).json({ message: "Task added successfully!" });
+    
+//   } catch (error) {
+//     console.log("Error adding task", error);
+//     res.status(500).json({ message: "Error adding task" });
+//   }
+// };

@@ -2,16 +2,25 @@ import express from "express";
 import bodyparser from "body-parser";
 import userRoutes from "./routes/userRoutes.js";
 import mongoose from "mongoose";
+import cors from "cors";
 
 const app = express();
 const PORT = 5010;
 
 app.use(bodyparser.json());
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 
 app.get("/", (req, res) =>
   res.send("Welcome to Home Page of ToDo Application")
 );
-app.use("/user", userRoutes);
+app.use("/users", userRoutes);
+// app.use("/todos", tasksRoutes);
 
 mongoose
   .connect(
