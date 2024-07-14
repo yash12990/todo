@@ -12,14 +12,22 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    if(!user) return res.status(404).json({ message: "No such user" });
+    const { email, password } = req.body;
+    const user = await User.find({ email: email });
 
-    res.status(200).json({
-      data: user,
-      status: 200,
-    });
+    console.log(user.email);
+    
+    if (user.password == password) {
+      res.status(200).json({user: [...user], message: "Login successful" });
+    } else {
+      res.status(401).json({ message: "Incorrect password" });
+    }
+
+    if (!user) return res.status(404).json({ message: "No such user" });
+    // res.status(200).json({
+    //   data: user,
+    //   status: 200,
+    // });
   } catch (error) {
     console.log("Error in fetching user", error);
     res.status(500).json({ message: "Error in fetching user" });
@@ -66,7 +74,7 @@ export const updateUser = async (req, res) => {
   }
 };
 
-export const deleteUser = async(req, res) => {
+export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await User.findByIdAndDelete(id);
@@ -87,7 +95,7 @@ export const deleteUser = async(req, res) => {
 //     });
 
 //     res.status(200).json({ message: "Task added successfully!" });
-    
+
 //   } catch (error) {
 //     console.log("Error adding task", error);
 //     res.status(500).json({ message: "Error adding task" });
