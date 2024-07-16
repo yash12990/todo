@@ -15,10 +15,12 @@ const userSchema = mongoose.Schema(
       password: true,
       required: true,
     },
-    // tasks: {
-    //   type: [String],
-    //   default: [],
-    // },
+    tasks: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Tasks",
+      },
+    ],
   },
   {
     timestamps: true,

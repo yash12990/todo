@@ -6,24 +6,34 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleFormSubmit = async(e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-        const userData = {
-            email: email,
-            password: password,
-        }
+      const userData = {
+        email: email,
+        password: password,
+      };
 
-        const res = await axios.get(`http://localhost:5010/users/login`, {...userData});
+      const res = await axios.post(
+        `http://localhost:5010/users/login`,
+        userData
+      );
 
-        if (res.status === 200) {
-            console.log("User logged in successfully!!", res);
-        } else {alert("User login failed!", res.message);
-            console.log(res)
-        }
+      if (res.status === 200) {
+        alert("User logged in successfully!!");
+        console.log("User logged in successfully!!", res);
 
+        // localStorage.setItem(`${res.data.user.name}`, userData.email);
+
+    } else if (res.status === 201) {
+        alert("Incorrect password!");
+      } else if (res.status === 202) {
+        alert("User not found! Please signup and try again.");
+        console.log(res);
+      }
     } catch (error) {
-        console.log("Error in login: " + error);
+      console.log("Error in login: " + error);
+      alert("Error occured!");
     }
   };
 
