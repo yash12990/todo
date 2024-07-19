@@ -1,8 +1,8 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Card } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 
-function RegisterForm() {
+function RegisterForm({ showRegisterModal, setShowRegisterModal }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,21 +27,25 @@ function RegisterForm() {
       setEmail("");
       setPassword("");
     }
+    setShowRegisterModal(false);
   };
 
   return (
-    <Card className="mx-auto mt-12 w-[50vw] h-[60vh] bg-slate-100 shadow-2xl">
-      <Card.Header>
+    <Modal
+      show={showRegisterModal}
+      className="mx-auto mt-12 w-[50vw] h-[60vh] bg-slate-100 shadow-2xl"
+    >
+      <Modal.Header>
         <h1 className="font-bold text-5xl text-center p-3">Register</h1>
-      </Card.Header>
-      <Card.Body className="mt-5">
+      </Modal.Header>
+      <Modal.Body className="mt-5">
         <form
           onSubmit={handleFormSubmit}
           className="flex flex-col items-center gap-y-4"
         >
           <p className="font-semibold text-xl">Username</p>
           <input
-          value={username}
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
             type="text"
             placeholder="Enter Username..."
@@ -51,7 +55,7 @@ function RegisterForm() {
 
           <p className="font-semibold text-xl">Email</p>
           <input
-          value={email}
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="Enter Email..."
@@ -61,7 +65,7 @@ function RegisterForm() {
 
           <p className="font-semibold text-xl">Password</p>
           <input
-          value={password}
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             placeholder="Enter Password..."
@@ -71,15 +75,17 @@ function RegisterForm() {
 
           <button
             onClick={handleFormSubmit}
-            disabled={username.length <= 0 || email.length <= 0 || password.length <= 0}
+            disabled={
+              username.length <= 0 || email.length <= 0 || password.length <= 0
+            }
             className="p-3 bg-blue-600 text-white rounded-xl disabled:bg-blue-400"
             // type="submit"
           >
             Register
           </button>
         </form>
-      </Card.Body>
-    </Card>
+      </Modal.Body>
+    </Modal>
   );
 }
 

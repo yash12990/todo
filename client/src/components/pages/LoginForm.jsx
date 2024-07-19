@@ -1,14 +1,18 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Card } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 
-function LoginForm() {
+function LoginForm({
+  showLoginModal,
+  setShowLoginModal,
+  setShowRegisterModal,
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    try {
+    // try {
       const userData = {
         email: email,
         password: password,
@@ -22,27 +26,29 @@ function LoginForm() {
       if (res.status === 200) {
         alert("User logged in successfully!!");
         console.log("User logged in successfully!!", res);
-
-        // localStorage.setItem(`${res.data.user.name}`, userData.email);
-
-    } else if (res.status === 201) {
+        setShowLoginModal(false);
+      } else if (res.status === 201) {
         alert("Incorrect password!");
       } else if (res.status === 202) {
         alert("User not found! Please signup and try again.");
+        setShowRegisterModal(true);
         console.log(res);
       }
-    } catch (error) {
-      console.log("Error in login: " + error);
-      alert("Error occured!");
-    }
+    // } catch (error) {
+    //   console.log("Error in login: " + error);
+    //   alert("Error occured!");
+    // }
   };
 
   return (
-    <Card className="mx-auto my-10 w-[40vw] h-[50vh] bg-slate-100 shadow-2xl">
-      <Card.Header>
+    <Modal
+      show={showLoginModal}
+      className="mx-auto my-10 w-[40vw] h-[50vh] bg-slate-100 shadow-2xl"
+    >
+      <Modal.Header>
         <h1 className="font-bold text-5xl text-center p-3">Login</h1>
-      </Card.Header>
-      <Card.Body className="mt-5">
+      </Modal.Header>
+      <Modal.Body className="mt-5">
         <form
           onSubmit={handleFormSubmit}
           className="flex flex-col items-center gap-y-4"
@@ -73,8 +79,8 @@ function LoginForm() {
             Login
           </button>
         </form>
-      </Card.Body>
-    </Card>
+      </Modal.Body>
+    </Modal>
   );
 }
 

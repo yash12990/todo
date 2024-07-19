@@ -1,4 +1,5 @@
 import { User } from "../models/userModel.js";
+import bcrypt from "bcryptjs";
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -10,94 +11,90 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const createUser = async (req, res) => {
+  try {
+    const { email, name, password } = req.body;
+    const hashedPassword = bcrypt.hashSync(password);
+
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      return res
+        .status(409)
+        .json({ message: "User already exists!! Please login." });
+    }
+
+    const user = new User({ email, name, password: hashedPassword });
+    await user
+      .save()
+      .then(() =>
+        res.status(200).json({ message: "User created successfully!" })
+      );
+  } catch (error) {
+    console.log("Error creating user", error);
+  }
+};
+
 export const getUserById = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email } = req.body;
     const user = await User.findOne({ email: email });
 
     if (!user) {
-      return res
-        .status(202)
-        .send({ message: "No such user", data: { email, username, password } });
+      return res.status(202).send({
+        message: "No user found! Register as a new user then try again.",
+      });
     }
 
-    if (user.password !== password) {
+    const isPasswordCorrect = bcrypt.compareSync(
+      req.body.password,
+      user.password
+    );
+    if (!isPasswordCorrect) {
       return res.status(201).json({ message: "Incorrect password" });
     }
 
-    res.status(200).json({ user: user, message: "Login successful" });
+    const { password, ...others } = user._doc;
+    res.status(200).json({ user: others, message: "Login successful" });
   } catch (error) {
     console.log("Error in fetching user", error);
     res.status(500).json({ message: "Error in fetching user" });
   }
 };
 
-export const createUser = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Please provide all required fields." });
-    }
-
-    // Check if a user with the same email already exists
-    const existingUser = await User.findOne({ where: { email: email } });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User with this email already exists." });
-    }
-
-    const newUser = {
-      name: name,
-      email: email,
-      password: password,
-    };
-
-    const user = await User.create(newUser);
-    res.status(201).json(user);
-  } catch (error) {
-    console.log("Error creating user", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-// export const createUser = async (req, res) => {
-//   try {
-//     if (!req.body.name || !req.body.email || !req.body.password) {
-//       return res
-//         .status(400)
-//         .json({ message: "Please provide all required fields." });
-//     }
-
-//     const newUser = {
-//       name: req.body.name,
-//       email: req.body.email,
-//       password: req.body.password,
-//     };
-
-//     const user = await User.create(newUser);
-//     res.status(201).json(user);
-//   } catch (error) {
-//     console.log("Error creating user", error);
-//   }
-// };
-
 export const updateUser = async (req, res) => {
   try {
-    if (!req.body.name || !req.body.email || !req.body.password) {
-      return res.status(400).json({ message: "All fields must be filled!!!" });
-    }
-
     const { id } = req.params;
-    const updatedUser = await User.findByIdAndUpdate(id, req.body);
-    if (!updatedUser) {
+    const { name, email, password } = req.body;
+    const hashedPassword = bcrypt.hashSync(password);
+
+    const userToBeUpdated = await User.findOne({ email: id });
+    if (!userToBeUpdated) {
       return res.status(404).json({ message: "User not found" });
     }
-
+    // if (
+    //   name === userToBeUpdated.name &&
+    //   email === userToBeUpdated.email &&
+    //   hashedPassword === userToBeUpdated.password
+    // ) {
+    //   return res.status(400).json({ message: "No changes made" });
+    // }
+    const newUserData = {
+      name: name,
+      email: email,
+      password: hashedPassword,
+    };
+    await User.findByIdAndUpdate(userToBeUpdated._id, newUserData);
     res.status(200).json({ message: "User updated successfully" });
+
+    // if (!req.body.name || !req.body.email || !req.body.password) {
+    //   return res.status(400).json({ message: "All fields must be filled!!!" });
+    // }
+    // const { id } = req.params;
+    // const updatedUser = await User.findByIdAndUpdate(id, req.body);
+    // if (!updatedUser) {
+    //   return res.status(404).json({ message: "User not found" });
+    // }
+    // res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
     console.log("Error updating user", error);
     res.status(500).json({ message: "Error updating user" });
@@ -116,18 +113,3 @@ export const deleteUser = async (req, res) => {
     console.log("Error deleting user", error);
   }
 };
-
-// export const addTask = async(req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const updatedUser = await User.findByIdAndUpdate(id, {
-//       $push: { tasks: req.body.task },
-//     });
-
-//     res.status(200).json({ message: "Task added successfully!" });
-
-//   } catch (error) {
-//     console.log("Error adding task", error);
-//     res.status(500).json({ message: "Error adding task" });
-//   }
-// };

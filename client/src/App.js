@@ -17,8 +17,18 @@ function App() {
       />
       <Hero />
 
-      {showLoginModal && <LoginForm />}
-      {showRegisterModal && <RegisterForm />}
+      <LoginForm
+        showLoginModal={showLoginModal}
+        setShowLoginModal={setShowLoginModal}
+        setShowRegisterModal={setShowRegisterModal}
+      />
+      <RegisterForm
+        showRegisterModal={showRegisterModal}
+        setShowRegisterModal={setShowRegisterModal}
+      />
+
+      {/* {showLoginModal && <LoginForm />} */}
+      {/* {showRegisterModal && <RegisterForm />} */}
     </div>
   );
 }
